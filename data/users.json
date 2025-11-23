@@ -1,0 +1,12 @@
+[
+    {
+        "id": "692310f9e5373",
+        "username": "admin1",
+        "email": "Admin.11@admin.com",
+        "password": "$2y$10$GK966H\/7ZNd.wqb\/1CmlmOTwMXWkD3EtW\/ug17BLxwGC.a3yRj6ry",
+        "is_admin": true,
+        "created_at": "2025-11-23 13:49:46",
+        "two_factor_enabled": false,
+        "two_factor_secret": null
+    }
+]
