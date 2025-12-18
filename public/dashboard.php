@@ -1,6 +1,7 @@
 <?php
 require_once '../config/config.php';
 require_once '../includes/auth.php';
+require_once '../includes/authorization.php';
 require_once '../includes/functions.php';
 require_once '../includes/database.php';
 
@@ -22,7 +23,15 @@ $successMessage = getSuccessMessage();
     <h1><?php echo APP_NAME; ?></h1>
     <div class="navbar-right">
         <span>Welcome, <?php echo htmlspecialchars(getCurrentUsername()); ?></span>
-
+        <a href="notes/shared_notes.php">Shared With Me</a>
+        <?php if (can('team.view')): ?>
+            <a href="manager_dashboard.php">Team Dashboard</a>
+        <?php endif; ?>
+        <?php
+        if (can('roles.assign')): ?>
+            <a href="roles/manage_roles.php">Manage Roles</a>
+        <?php endif; ?>
+        <a href="roles/my_access.php">My Access</a>
         <?php
         $currentUser = Database::findUserById(getCurrentUserId());
         if ($currentUser['two_factor_enabled']): ?>
@@ -62,6 +71,7 @@ $successMessage = getSuccessMessage();
                     <small style="color: #999;">Created: <?php echo $note['created_at']; ?></small>
                     <div class="note-actions">
                         <a href="notes/edit_note.php?id=<?php echo $note['id']; ?>" class="btn btn-secondary">Edit</a>
+                        <a href="notes/share_note.php?id=<?php echo $note['id']; ?>" class="btn btn-primary" style="background: #2196F3;">Share</a>
                         <a href="notes/delete_note.php?id=<?php echo $note['id']; ?>" class="btn btn-danger" onclick="return confirm('Are you sure?');">Delete</a>
                     </div>
                 </div>

@@ -1,6 +1,7 @@
 <?php
 require_once '../../config/config.php';
 require_once '../../includes/auth.php';
+require_once '../../includes/authorization.php';
 require_once '../../includes/functions.php';
 require_once '../../includes/database.php';
 
@@ -8,6 +9,11 @@ requireLogin();
 
 $noteId = $_GET['id'] ?? null;
 if (!$noteId) {
+    redirect('../dashboard.php');
+}
+
+if (!Authorization::canAccessNote($noteId, 'write')) {
+    setErrorMessage('You do not have permission to edit this note.');
     redirect('../dashboard.php');
 }
 

@@ -1,6 +1,7 @@
 <?php
 require_once '../../config/config.php';
 require_once '../../includes/auth.php';
+require_once '../../includes/authorization.php';
 require_once '../../includes/functions.php';
 require_once '../../includes/database.php';
 
@@ -12,11 +13,11 @@ if (!$noteId) {
 }
 
 $note = Database::findNoteById($noteId, getCurrentUserId());
-if ($note) {
+if ($note && ($note['user_id'] === getCurrentUserId() || can('notes.delete_any'))) {
     Database::deleteNote($noteId);
     setSuccessMessage('Note deleted successfully!');
 } else {
-    setErrorMessage('Note not found or access denied.');
+    setErrorMessage('You do not have permission to delete this note.');
 }
 
 redirect('../dashboard.php');

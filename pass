@@ -1,1 +1,70 @@
 user: admin1  pass:Admin.11
+user: user    pass:User.123
+
+<?php
+require_once '../config/config.php';
+require_once '../includes/database.php';
+
+// WARNING: Only run this ONCE to create test users
+
+$testUsers = [
+    [
+        'username' => 'manager1',
+        'email' => 'manager@test.com',
+        'password' => 'Manager123!',
+        'role' => 'manager',
+        'department' => 'Sales',
+        'manager_id' => null
+    ],
+    [
+        'username' => 'employee1',
+        'email' => 'employee1@test.com',
+        'password' => 'Employee123!',
+        'role' => 'user',
+        'department' => 'Sales',
+        'manager_id' => null // Will be updated after manager is created
+    ],
+    [
+        'username' => 'employee2',
+        'email' => 'employee2@test.com',
+        'password' => 'Employee123!',
+        'role' => 'user',
+        'department' => 'Sales',
+        'manager_id' => null
+    ]
+];
+
+$users = Database::getUsers();
+
+// Create manager first
+$managerUser = Database::createUser(
+    $testUsers[0]['username'],
+    $testUsers[0]['email'],
+    $testUsers[0]['password'],
+    $testUsers[0]['role']
+);
+
+echo "Created manager: " . $managerUser['username'] . " (ID: " . $managerUser['id'] . ")<br>";
+
+// Create employees and assign manager
+for ($i = 1; $i < count($testUsers); $i++) {
+    $employeeUser = Database::createUser(
+        $testUsers[$i]['username'],
+        $testUsers[$i]['email'],
+        $testUsers[$i]['password'],
+        $testUsers[$i]['role']
+    );
+
+    // Assign manager
+    Database::updateUser($employeeUser['id'], ['manager_id' => $managerUser['id']]);
+
+    echo "Created employee: " . $employeeUser['username'] . " (ID: " . $employeeUser['id'] . ") - Manager: " . $managerUser['username'] . "<br>";
+}
+
+echo "<br><strong>Test users created successfully!</strong><br>";
+echo "<br>Login credentials:<br>";
+echo "Manager: manager1 / Manager123!<br>";
+echo "Employee 1: employee1 / Employee123!<br>";
+echo "Employee 2: employee2 / Employee123!<br>";
+echo "<br><a href='index.php'>Go to Login</a>";
+?>

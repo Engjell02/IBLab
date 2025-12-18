@@ -48,7 +48,7 @@ class Database {
         return null;
     }
 
-    public static function createUser($username, $email, $password) {
+    public static function createUser($username, $email, $password, $role = 'user') {
         $users = self::getUsers();
 
         $newUser = [
@@ -58,9 +58,13 @@ class Database {
             'password' => password_hash($password, PASSWORD_DEFAULT),
             'is_admin' => false,
             'created_at' => date('Y-m-d H:i:s'),
-
             'two_factor_enabled' => false,
             'two_factor_secret' => null,
+            'role' => $role,
+            'organization_id' => 'org_001',
+            'department' => 'General',
+            'manager_id' => null,
+            'temporary_roles' => []
         ];
 
         $users[] = $newUser;
@@ -144,6 +148,76 @@ class Database {
             return $note['user_id'] !== $userId;
         });
         self::saveNotes(array_values($notes));
+    }
+
+    public static function updateUser($userId, $updates) {
+        $users = self::getUsers();
+
+        foreach ($users as &$user) {
+            if ($user['id'] === $userId) {
+                $user = array_merge($user, $updates);
+                self::saveUsers($users);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static function assignRole($userId, $role) {
+        return self::updateUser($userId, ['role' => $role]);
+    }
+
+    public static function getUsersByRole($role) {
+        $users = self::getUsers();
+        return array_filter($users, function($user) use ($role) {
+            return isset($user['role']) && $user['role'] === $role;
+        });
+    }
+
+    public static function shareNote($noteId, $userId, $permission, $expiresAt = null) {
+        $notes = self::getNotes();
+
+        foreach ($notes as &$note) {
+            if ($note['id'] === $noteId) {
+                if (!isset($note['shared_with'])) {
+                    $note['shared_with'] = [];
+                }
+
+                $note['shared_with'][] = [
+                    'user_id' => $userId,
+                    'permission' => $permission,
+                    'granted_at' => date('Y-m-d H:i:s'),
+                    'expires_at' => $expiresAt
+                ];
+
+                self::saveNotes($notes);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static function getSharedNotes($userId) {
+        $notes = self::getNotes();
+        $shared = [];
+
+        foreach ($notes as $note) {
+            if (isset($note['shared_with'])) {
+                foreach ($note['shared_with'] as $share) {
+                    if ($share['user_id'] === $userId) {
+                        // Check if not expired
+                        if (!$share['expires_at'] || strtotime($share['expires_at']) >= time()) {
+                            $shared[] = $note;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $shared;
     }
 }
 ?>
